@@ -12,7 +12,6 @@ def search(query, top_k=3):
         n_results=top_k
     )
 
-    # Flatten Chroma's batched response into one hit per result.
     hits = []
     for text, metadata, distance in zip(
         results["documents"][0],

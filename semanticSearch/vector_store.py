@@ -2,7 +2,6 @@ from pathlib import Path
 
 import chromadb
 
-# Resolved from this file so it works no matter which directory you run from.
 DB_PATH = Path(__file__).resolve().parent / "chroma_db"
 
 client = chromadb.PersistentClient(path=str(DB_PATH))
@@ -31,7 +30,6 @@ def store_embeddings(chunks):
             "chunk_id": chunk["chunk_id"]
         })
 
-    # One write for the whole batch — not one per chunk.
     collection.upsert(
         ids=ids,
         documents=documents,

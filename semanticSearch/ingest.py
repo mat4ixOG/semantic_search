@@ -1,5 +1,3 @@
-"""Run once to build the index: PDF -> pages -> chunks -> embeddings -> Chroma."""
-
 from chunking import chunk_text
 from embeddings import create_embeddings
 from pdf_ingestion import DEFAULT_PDF, load_pdf
