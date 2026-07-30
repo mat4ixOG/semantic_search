@@ -1,13 +1,17 @@
 from pathlib import Path
 
 import chromadb
+import config
 
-DB_PATH = Path(__file__).resolve().parent / "chroma_db"
+DB_PATH_NAME = config.CHROMA_DB_PATH
+COLLECTION_NAME = config.COLLECTION_NAME
+
+DB_PATH = Path(__file__).resolve().parent / DB_PATH_NAME
 
 client = chromadb.PersistentClient(path=str(DB_PATH))
 
 collection = client.get_or_create_collection(
-    name="employee_handbook"
+    name=COLLECTION_NAME
 )
 
 

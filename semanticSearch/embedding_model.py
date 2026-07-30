@@ -1,6 +1,9 @@
 from sentence_transformers import  SentenceTransformer
+import config
 
-_model = SentenceTransformer("all-MiniLM-L6-v2")
+MODEL_NAME = config.EMBEDDING_MODEL
+
+_model = SentenceTransformer(MODEL_NAME)
 
 def get_model():
     return _model

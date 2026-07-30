@@ -2,9 +2,10 @@ from chunking import chunk_text
 from embeddings import create_embeddings
 from pdf_ingestion import DEFAULT_PDF, load_pdf
 from vector_store import store_embeddings
+import config
 
-CHUNK_SIZE = 800
-OVERLAP = 100
+CHUNK_SIZE = config.CHUNK_SIZE
+OVERLAP = config.CHUNK_OVERLAP
 
 
 def ingest(pdf_path=DEFAULT_PDF, document_name=None):
