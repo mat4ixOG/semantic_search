@@ -1,3 +1,11 @@
-
+ollama
+chromadb
 sentence-transformers
 rank-bm25
+numpy
+PyMuPDF
+
+# API
+fastapi
+uvicorn[standard]
+pydantic

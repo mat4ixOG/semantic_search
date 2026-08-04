@@ -13,3 +13,14 @@ semanticSearch/chroma_db/
 
 # Claude
 .claude/
+
+# SQLite conversations
+semanticSearch/*.db
+
+# Evaluation output
+semanticSearch/eval_results.json
+
+# Frontend
+frontend/node_modules/
+frontend/.next/
+frontend/next-env.d.ts

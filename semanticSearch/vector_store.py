@@ -3,16 +3,27 @@ from pathlib import Path
 import chromadb
 import config
 
-DB_PATH_NAME = config.CHROMA_DB_PATH
-COLLECTION_NAME = config.COLLECTION_NAME
+DB_PATH = Path(__file__).resolve().parent / config.CHROMA_DB_PATH
 
-DB_PATH = Path(__file__).resolve().parent / DB_PATH_NAME
+_client = None
+_collection = None
 
-client = chromadb.PersistentClient(path=str(DB_PATH))
 
-collection = client.get_or_create_collection(
-    name=COLLECTION_NAME
-)
+def get_collection():
+    """
+    Opened on first use. Connecting to Chroma at import time makes every
+    module that touches this one unimportable without a database.
+    """
+
+    global _client, _collection
+
+    if _collection is None:
+        _client = chromadb.PersistentClient(path=str(DB_PATH))
+        _collection = _client.get_or_create_collection(
+            name=config.COLLECTION_NAME
+        )
+
+    return _collection
 
 
 def store_embeddings(chunks):
@@ -34,7 +45,7 @@ def store_embeddings(chunks):
             "chunk_id": chunk["chunk_id"]
         })
 
-    collection.upsert(
+    get_collection().upsert(
         ids=ids,
         documents=documents,
         embeddings=embeddings,
@@ -42,3 +53,7 @@ def store_embeddings(chunks):
     )
 
     return len(ids)
+
+
+def count() -> int:
+    return get_collection().count()
