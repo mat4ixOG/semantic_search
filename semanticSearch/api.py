@@ -33,6 +33,8 @@ class AskRequest(BaseModel):
     conversation_id: str | None = None
     # None means "whatever config says"
     agent: bool | None = None
+    # Answer with the small fast model instead of the main one
+    fast: bool = False
 
 
 @app.get("/api/health")
@@ -106,7 +108,12 @@ def ask(request: AskRequest):
     history = store.history_for(conversation_id)
 
     try:
-        payload = service.ask(request.question, history, request.agent)
+        payload = service.ask(
+            request.question,
+            history,
+            request.agent,
+            request.fast,
+        )
     except service.PipelineError as error:
         raise HTTPException(503, f"model backend unavailable: {error}")
 
@@ -133,7 +140,12 @@ def ask_stream(request: AskRequest):
         payload = None
 
         try:
-            for event in service.ask_stream(request.question, history, request.agent):
+            for event in service.ask_stream(
+                    request.question,
+                    history,
+                    request.agent,
+                    request.fast,
+            ):
                 if event["type"] == "done":
                     payload = event["payload"]
                     payload["conversation_id"] = conversation_id

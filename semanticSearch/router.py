@@ -1,3 +1,4 @@
+import config
 from llm import UTILITY_MODEL, ask_llm_json
 from prompts import (
     DIRECT_ROUTE,
@@ -29,6 +30,7 @@ def route(question: str, transcript: str = EMPTY_TRANSCRIPT) -> dict:
         messages=messages,
         schema=ROUTE_SCHEMA,
         pref_model=UTILITY_MODEL,
+        max_tokens=config.ROUTER_MAX_TOKENS,
     )
 
     if not decision:

@@ -1,4 +1,5 @@
-from llm import ask_llm_json, stream_llm
+import config
+from llm import answer_model, ask_llm_json, stream_llm
 from prompts import ANSWER_SCHEMA, build_chat_messages, build_messages
 
 FALLBACK_ANSWER = "I don't know."
@@ -18,7 +19,7 @@ def build_answer_messages(question, hits, history, json_mode, tool_notes=None):
 
 
 def answer_question(question: str, hits: list[dict], history: list[dict],
-                    tool_notes: list[str] = None) -> dict:
+                    tool_notes: list[str] = None, fast: bool = False) -> dict:
     """
     JSON mode. Ask for a schema constrained answer and resolve the excerpt
     numbers the model cited back into real document metadata.
@@ -35,6 +36,8 @@ def answer_question(question: str, hits: list[dict], history: list[dict],
     response = ask_llm_json(
         messages=messages,
         schema=ANSWER_SCHEMA,
+        pref_model=answer_model(fast),
+        max_tokens=config.ANSWER_MAX_TOKENS,
     )
 
     if not response:
@@ -55,7 +58,7 @@ def answer_question(question: str, hits: list[dict], history: list[dict],
 
 
 def stream_answer(question: str, hits: list[dict], history: list[dict],
-                  tool_notes: list[str] = None):
+                  tool_notes: list[str] = None, fast: bool = False):
     """
     Text mode. Yields the answer as it is generated.
     """
@@ -68,7 +71,11 @@ def stream_answer(question: str, hits: list[dict], history: list[dict],
         tool_notes=tool_notes,
     )
 
-    yield from stream_llm(messages)
+    yield from stream_llm(
+        messages,
+        pref_model=answer_model(fast),
+        max_tokens=config.ANSWER_MAX_TOKENS,
+    )
 
 
 def resolve_sources(cited, hits: list[dict]) -> list[dict]:

@@ -137,6 +137,7 @@ def compress_with_llm(question: str, hits: list[dict]) -> list[dict]:
         extract = ask_llm(
             messages=messages,
             pref_model=UTILITY_MODEL,
+            max_tokens=config.COMPRESSION_MAX_TOKENS,
         )
 
         extract = (extract or "").strip()

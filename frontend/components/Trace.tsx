@@ -25,7 +25,10 @@ export default function Trace({ trace }: { trace: TraceData }) {
         <span className={`pill ${trace.used ? "ok" : "warn"}`}>
           {trace.route ?? "unknown"}
         </span>
-        {trace.agent ? <span className="pill">agent</span> : null}
+        {trace.agent && !trace.simple ? (
+          <span className="pill">agent</span>
+        ) : null}
+        {trace.fast ? <span className="pill warn">fast</span> : null}
         {trace.hyde_used ? <span className="pill">hyde</span> : null}
         {trace.compressed ? <span className="pill">compressed</span> : null}
         <span>{trace.llm_calls} llm calls</span>

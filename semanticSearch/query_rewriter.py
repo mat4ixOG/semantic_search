@@ -52,6 +52,7 @@ def expand_query(question: str, transcript: str = "") -> tuple[str, list[str]]:
         messages=messages,
         schema=QUERY_EXPANSION_SCHEMA,
         pref_model=UTILITY_MODEL,
+        max_tokens=config.EXPANSION_MAX_TOKENS,
     )
 
     if not response:

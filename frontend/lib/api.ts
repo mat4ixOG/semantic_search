@@ -45,7 +45,12 @@ export const deleteConversation = (id: string) =>
  * could not carry the question in a body.
  */
 export async function askStream(
-  body: { question: string; conversation_id: string | null; agent: boolean },
+  body: {
+    question: string;
+    conversation_id: string | null;
+    agent: boolean;
+    fast: boolean;
+  },
   onEvent: (event: StreamEvent) => void,
   signal?: AbortSignal,
 ): Promise<void> {

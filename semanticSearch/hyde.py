@@ -22,6 +22,7 @@ def generate_hypothetical_document(question: str) -> str | None:
     document = ask_llm(
         messages=messages,
         pref_model=UTILITY_MODEL,
+        max_tokens=config.HYDE_MAX_TOKENS,
     )
 
     document = (document or "").strip()

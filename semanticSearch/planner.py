@@ -53,6 +53,38 @@ def fallback_plan(question: str) -> list[dict]:
     ]
 
 
+# Wording that signals the question really does have several parts
+MULTI_PART_MARKERS = (
+    " and ",
+    " also ",
+    " versus ",
+    " vs ",
+    " compare",
+    " difference",
+    " both ",
+    " then ",
+    ";",
+)
+
+
+def looks_simple(question: str) -> bool:
+    """
+    A short single clause question decomposes into exactly the one search
+    step plain retrieval would have run, so planning and criticising it costs
+    two LLM calls and buys nothing.
+    """
+
+    normalised = f" {question.lower().strip()} "
+
+    if len(question.split()) > config.AGENT_SIMPLE_MAX_WORDS:
+        return False
+
+    if question.count("?") > 1:
+        return False
+
+    return not any(marker in normalised for marker in MULTI_PART_MARKERS)
+
+
 def make_plan(question: str, transcript: str = "") -> list[dict]:
     """
     Decompose the question into independent tool calls.
@@ -71,6 +103,7 @@ def make_plan(question: str, transcript: str = "") -> list[dict]:
         messages=messages,
         schema=plan_schema(),
         pref_model=UTILITY_MODEL,
+        max_tokens=config.PLANNER_MAX_TOKENS,
     )
 
     if not response:
@@ -136,6 +169,7 @@ def criticise(question: str, steps: list[dict], results: list[dict]) -> list[dic
         messages=messages,
         schema=CRITIC_SCHEMA,
         pref_model=UTILITY_MODEL,
+        max_tokens=config.CRITIC_MAX_TOKENS,
     )
 
     if not response or response.get("complete"):

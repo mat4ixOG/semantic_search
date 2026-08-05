@@ -142,7 +142,32 @@ Conversations persist to `semanticSearch/conversations.db`.
 
 - `json on` / `json off` — full JSON payload, or streamed prose
 - `agent on` / `agent off` — plan and execute, or straight retrieval
+- `fast on` / `fast off` — answer with `FAST_MODEL` instead of `MODEL_NAME`
 - `exit`
+
+## Speed
+
+Most of the wall clock is the answer model, and most of that is processing
+the retrieved context rather than generating the reply. Rough per question
+cost, measured on a CPU-only 12th gen i5 with no GPU:
+
+| Setting                            | Effect                          |
+| ---------------------------------- | ------------------------------- |
+| default, simple question           | 4 LLM calls                     |
+| default, multi part question       | 6 LLM calls                     |
+| `fast on`                          | answers on the 1b, several times faster |
+| `RAG_USE_HYDE=false`               | one call fewer per search       |
+| `RAG_RERANK_TOP_K=3`               | shorter answer prompt           |
+
+Short single clause questions skip the planner and the critic automatically,
+since decomposing them produces the one search step plain retrieval already
+runs. Look for `simple` in the trace.
+
+If ollama is evicting models between calls, every call pays a cold load from
+disk that costs more than the generation. Check with `ollama ps`: if it is
+empty between questions, set `OLLAMA_KEEP_ALIVE=30m` and
+`OLLAMA_MAX_LOADED_MODELS=2`, and make sure the machine has enough free RAM
+to hold both models at once.
 
 ## Layout
 

@@ -36,6 +36,7 @@ export default function Page() {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [health, setHealth] = useState<Health | null>(null);
   const [agent, setAgent] = useState(true);
+  const [fast, setFast] = useState(false);
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -132,7 +133,7 @@ export default function Page() {
       let streamed = "";
 
       await askStream(
-        { question: trimmed, conversation_id: conversationId, agent },
+        { question: trimmed, conversation_id: conversationId, agent, fast },
         (event) => {
           if (event.type === "retrieval") {
             updateLast({
@@ -198,6 +199,18 @@ export default function Page() {
           </span>
 
           <div className="topbar-spacer" />
+
+          <button
+            className={`toggle ${fast ? "on" : ""}`}
+            onClick={() => setFast((value) => !value)}
+            title={
+              settings
+                ? `Answer with ${settings.fast_model} instead of ${settings.model}. Much faster, noticeably weaker.`
+                : "Answer with the small model"
+            }
+          >
+            fast {fast ? "on" : "off"}
+          </button>
 
           <button
             className={`toggle ${agent ? "on" : ""}`}

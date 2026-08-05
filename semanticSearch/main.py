@@ -4,7 +4,11 @@ import config
 import service
 from memory import ConversationMemory
 
-COMMANDS = {"json", "json on", "json off", "agent", "agent on", "agent off"}
+COMMANDS = {
+    "json", "json on", "json off",
+    "agent", "agent on", "agent off",
+    "fast", "fast on", "fast off",
+}
 
 
 class Session:
@@ -17,17 +21,21 @@ class Session:
         self.memory = ConversationMemory()
         self.json_output = config.JSON_OUTPUT
         self.agent_mode = config.USE_AGENT
+        self.fast_mode = False
 
     def banner(self):
         print("------ ENTERING WORLD OF AI-------")
         print("------ ACTIVATING NEURAL NETWORKS -------")
         print("------ JARVIS AT YOUR SERVICE-------")
-        print("commands: `json on|off` | `agent on|off` | `exit`")
+        print("commands: `json on|off` | `agent on|off` | `fast on|off` | `exit`")
         self.print_modes()
 
     def print_modes(self):
+        model = config.FAST_MODEL if self.fast_mode else config.MODEL_NAME
+
         print(f"output: {'json' if self.json_output else 'text'}"
-              f"   agent: {'on' if self.agent_mode else 'off'}")
+              f"   agent: {'on' if self.agent_mode else 'off'}"
+              f"   answers: {model}")
 
     def handle_command(self, command):
         """
@@ -37,14 +45,15 @@ class Session:
         if command not in COMMANDS:
             return False
 
-        if command == "json":
-            self.json_output = not self.json_output
-        elif command == "agent":
-            self.agent_mode = not self.agent_mode
-        elif command.startswith("json"):
-            self.json_output = command.endswith("on")
+        name, _, state = command.partition(" ")
+        value = state == "on" if state else None
+
+        if name == "json":
+            self.json_output = not self.json_output if value is None else value
+        elif name == "agent":
+            self.agent_mode = not self.agent_mode if value is None else value
         else:
-            self.agent_mode = command.endswith("on")
+            self.fast_mode = not self.fast_mode if value is None else value
 
         self.print_modes()
 
@@ -55,6 +64,7 @@ class Session:
             question,
             self.memory.get_history(),
             self.agent_mode,
+            self.fast_mode,
         )
 
         print(json.dumps(payload, indent=2))
@@ -68,6 +78,7 @@ class Session:
                 question,
                 self.memory.get_history(),
                 self.agent_mode,
+                self.fast_mode,
         ):
             if event["type"] == "retrieval":
                 self.print_trace(event["trace"])

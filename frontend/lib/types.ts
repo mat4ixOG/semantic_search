@@ -36,6 +36,10 @@ export type Trace = {
   llm_calls: number;
   seconds?: number;
   agent?: boolean;
+  /** planner and critic were skipped as unnecessary */
+  simple?: boolean;
+  /** answered with the small fast model */
+  fast?: boolean;
   plan?: { tool: string; input: string; purpose: string }[];
   steps?: PlanStep[];
   replanned?: Replan[];
@@ -71,6 +75,7 @@ export type Conversation = {
 
 export type Settings = {
   model: string;
+  fast_model: string;
   utility_model: string;
   embedding_model: string;
   reranker: string;

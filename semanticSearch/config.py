@@ -39,6 +39,10 @@ MODEL_NAME = text("MODEL_NAME", "gemma3:4b")
 # if it is not pulled.
 UTILITY_MODEL = text("UTILITY_MODEL", "gemma3:1b")
 
+# Answer model used when a request asks for speed over quality. Toggle at the
+# prompt with `fast on` / `fast off`, or per request from the API.
+FAST_MODEL = text("FAST_MODEL", "gemma3:1b")
+
 EMBEDDING_MODEL = text("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
 
 CHROMA_DB_PATH = text("CHROMA_DB_PATH", "chroma_db")
@@ -118,6 +122,29 @@ RRF_K = number("RRF_K", 60)
 # Longest LLM generated query accepted. Anything longer means the model
 # answered the question instead of rewriting it.
 MAX_QUERY_LENGTH = number("MAX_QUERY_LENGTH", 300)
+
+# Output ceilings per call type. Without these a model can ramble for
+# hundreds of tokens on a job that needs twenty, and on CPU every token is
+# paid for in wall clock.
+ROUTER_MAX_TOKENS = number("ROUTER_MAX_TOKENS", 60)
+
+EXPANSION_MAX_TOKENS = number("EXPANSION_MAX_TOKENS", 160)
+
+HYDE_MAX_TOKENS = number("HYDE_MAX_TOKENS", 140)
+
+PLANNER_MAX_TOKENS = number("PLANNER_MAX_TOKENS", 220)
+
+CRITIC_MAX_TOKENS = number("CRITIC_MAX_TOKENS", 160)
+
+COMPRESSION_MAX_TOKENS = number("COMPRESSION_MAX_TOKENS", 320)
+
+ANSWER_MAX_TOKENS = number("ANSWER_MAX_TOKENS", 600)
+
+# A question this short with no multi part markers goes straight to one
+# document search, skipping the planner and the critic. Decomposing "how many
+# sick days do I get" produces the single step plain retrieval would have run
+# anyway, for two extra LLM calls.
+AGENT_SIMPLE_MAX_WORDS = number("AGENT_SIMPLE_MAX_WORDS", 14)
 
 # Messages kept in a conversation's working memory
 MEMORY_MAX_MESSAGES = number("MEMORY_MAX_MESSAGES", 10)

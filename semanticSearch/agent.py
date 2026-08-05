@@ -1,5 +1,5 @@
 import config
-from planner import criticise, make_plan
+from planner import criticise, fallback_plan, looks_simple, make_plan
 from prompts import DOCUMENT_ROUTE
 from retrieval import empty_trace
 from router import EMPTY_TRANSCRIPT, route
@@ -33,8 +33,18 @@ def run_agent(question: str, transcript: str = EMPTY_TRANSCRIPT) -> tuple[list[d
 
     trace["used"] = True
 
-    steps = make_plan(question, transcript)
-    trace["llm_calls"] += 1
+    # A short single clause question would be "planned" into the one search
+    # step plain retrieval already does, so skip the planner and the critic
+    # and save two calls.
+    simple = looks_simple(question)
+    trace["simple"] = simple
+
+    if simple:
+        steps = fallback_plan(question)
+    else:
+        steps = make_plan(question, transcript)
+        trace["llm_calls"] += 1
+
     trace["plan"] = [dict(step) for step in steps]
 
     # Tools report their own LLM usage back through here, since a
@@ -49,10 +59,15 @@ def run_agent(question: str, transcript: str = EMPTY_TRANSCRIPT) -> tuple[list[d
         for step in steps
     ]
 
-    gaps = criticise(question, steps, results)
+    # Nothing to criticise when the plan was a single search: if it came back
+    # empty, rephrasing it is the query expansion's job, not the critic's.
+    if simple:
+        gaps = []
+    else:
+        gaps = criticise(question, steps, results)
 
-    if config.AGENT_ALLOW_REPLAN:
-        trace["llm_calls"] += 1
+        if config.AGENT_ALLOW_REPLAN:
+            trace["llm_calls"] += 1
 
     for gap in gaps:
         index = gap["step"] - 1

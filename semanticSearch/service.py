@@ -53,7 +53,8 @@ def build_payload(question, answer, trace, hits, tool_notes, elapsed=None):
     return payload
 
 
-def ask(question: str, history: list[dict] = None, agent_mode: bool = None) -> dict:
+def ask(question: str, history: list[dict] = None, agent_mode: bool = None,
+        fast: bool = False) -> dict:
     """
     One question, one complete JSON answer. The entry point for the API and
     for anything that does not need token streaming.
@@ -76,6 +77,7 @@ def ask(question: str, history: list[dict] = None, agent_mode: bool = None) -> d
             hits,
             memory.get_history(),
             tool_notes,
+            fast,
         )
     except PipelineError:
         raise
@@ -83,11 +85,13 @@ def ask(question: str, history: list[dict] = None, agent_mode: bool = None) -> d
         raise PipelineError(str(error)) from error
 
     elapsed = time.perf_counter() - started
+    trace["fast"] = fast
 
     return build_payload(question, answer, trace, hits, tool_notes, elapsed)
 
 
-def ask_stream(question: str, history: list[dict] = None, agent_mode: bool = None):
+def ask_stream(question: str, history: list[dict] = None, agent_mode: bool = None,
+               fast: bool = False):
     """
     The same pipeline, as a stream of events.
 
@@ -111,6 +115,8 @@ def ask_stream(question: str, history: list[dict] = None, agent_mode: bool = Non
     except Exception as error:
         raise PipelineError(str(error)) from error
 
+    trace["fast"] = fast
+
     yield {
         "type": "retrieval",
         "trace": trace,
@@ -121,7 +127,8 @@ def ask_stream(question: str, history: list[dict] = None, agent_mode: bool = Non
     answer = ""
 
     try:
-        for chunk in stream_answer(question, hits, memory.get_history(), tool_notes):
+        for chunk in stream_answer(
+                question, hits, memory.get_history(), tool_notes, fast):
             answer += chunk
 
             yield {
@@ -161,6 +168,7 @@ def settings() -> dict:
 
     return {
         "model": config.MODEL_NAME,
+        "fast_model": config.FAST_MODEL,
         "utility_model": config.UTILITY_MODEL,
         "embedding_model": config.EMBEDDING_MODEL,
         "reranker": config.CROSS_ENCODER_MODEL,
